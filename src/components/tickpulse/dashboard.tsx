@@ -1,0 +1,20 @@
+import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
+import { ArrowUpRight, Plus, TrendingUp, ShieldCheck, Circle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { useTrading, money, signedMoney, riskRates, type Risk } from '@/lib/tickpulse-store';
+import { TradingChart } from './chart';
+import { PageHeading, AssistantPending } from './shell';
+
+export function Dashboard() {
+  const { bots, toggleBot, setRisk, account } = useTrading();
+  const [period, setPeriod] = useState('1D');
+  const active = bots.filter(b => b.active).length;
+  return <><PageHeading title="Command center" subtitle="Your markets. Your strategies. One clear view."><AssistantPending /><Button asChild><Link to="/bots"><Plus />Create bot</Link></Button></PageHeading>
+    <section className="balance-band"><div className="balance-primary"><span className="metric-label">Total balance <span className="small-tag">{account.toUpperCase()} · DEMO</span></span><div className="balance-value">{money(account === 'Cent' ? 5000 : account === 'Pro' ? 0 : 24850)}<span>USD</span></div><div className="balance-change"><TrendingUp size={16} />+$642.50 <span>(+2.65%) today</span></div></div><div className="balance-detail"><span className="metric-label">Available balance</span><strong>{money(account === 'Cent' ? 3200 : account === 'Pro' ? 0 : 18350)}</strong><span className="detail-note">Unallocated capital</span></div><div className="balance-detail"><span className="metric-label">Bot allocation</span><strong>{money(account === 'Cent' ? 1800 : account === 'Pro' ? 0 : 6500)}</strong><span className="detail-note"><span className="status-dot" />{active} active strategies</span></div><div className="balance-detail risk-summary"><ShieldCheck size={22} /><span className="metric-label">Risk protection</span><strong className="text-primary">Enabled</strong><span className="detail-note">Global drawdown guard</span></div></section>
+    <section className="chart-panel"><div className="panel-toolbar"><div><h2>Portfolio equity</h2><span className="chart-subtitle">+$730.00 <span className="text-muted-foreground">over selected period</span></span></div><div className="segment-control">{['1D', '1W', '1M', 'ALL'].map(p => <Button key={p} size="sm" variant={period === p ? 'secondary' : 'ghost'} aria-pressed={period === p} onClick={() => setPeriod(p)}>{p}</Button>)}</div></div><TradingChart period={period} /></section>
+    <div className="section-heading"><div><h2>Multi-asset bots <span className="count-badge">{bots.length}</span></h2><p>Intelligence across every market.</p></div><span className="market-state"><span className="status-dot" />{active} active <span className="text-muted-foreground">· {bots.length - active} paused</span></span></div>
+    <div className="bot-grid">{bots.map(bot => <article className={`bot-card ${!bot.active ? 'bot-paused' : ''}`} key={bot.pair}><div className="bot-card-top"><div className={`asset-symbol asset-${bot.group}`}>{bot.symbol}</div><div className="bot-title"><h3>{bot.pair}</h3><span>{bot.name}</span></div><Switch checked={bot.active} onCheckedChange={checked => toggleBot(bot.pair, checked)} aria-label={`${bot.active ? 'Pause' : 'Start'} ${bot.pair} bot`} /></div><div className="bot-strategy"><span><Circle size={7} fill="currentColor" />{bot.strategy}</span><span className={bot.active ? 'text-primary' : 'text-muted-foreground'}>{bot.active ? 'Running' : 'Paused'}</span></div><div className="bot-profit"><span>Net P&L</span><strong className={bot.pnl >= 0 ? 'text-primary' : 'text-destructive'}>{signedMoney(bot.pnl)}<ArrowUpRight size={15} /></strong></div><div className="bot-card-bottom"><span>{bot.timeframe} <span className="text-muted-foreground">·</span> {money(bot.amount)}</span><select className={`risk-select risk-${bot.risk.toLowerCase()}`} value={bot.risk} aria-label={`${bot.pair} risk preset`} onChange={e => { const v = e.target.value; if (v in riskRates) setRisk(bot.pair, v as Risk); }}>{Object.keys(riskRates).map(risk => <option key={risk}>{risk}</option>)}</select></div></article>)}</div>
+  </>;
+}
