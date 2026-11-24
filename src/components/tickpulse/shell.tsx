@@ -1,5 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router';
-import { Activity, LayoutGrid, Bot, ChartNoAxesCombined, Wallet, Settings, ChevronDown, ShieldCheck, CircleStop, ArrowUpRight, Unplug, MessageSquare } from 'lucide-react';
+import { Activity, LayoutGrid, Bot, ChartNoAxesCombined, Wallet, Settings, ChevronDown, ShieldCheck, CircleStop, ArrowUpRight, Unplug } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -28,6 +28,4 @@ export function AppShell({ children }: { children: ReactNode }) {
 export function PageHeading({ title, subtitle, children }: { title: string; subtitle: string; children?: ReactNode }) {
   return <div className="page-heading"><div><div className="eyebrow"><span className="eyebrow-line" />TICKPULSE TERMINAL</div><h1>{title}</h1><p>{subtitle}</p></div><div className="heading-actions">{children}</div></div>;
 }
-export function AssistantPending() {
-  return <Button variant="outline" disabled title="Conversation preferences are awaiting your answer"><MessageSquare />Bot AI Assistant</Button>;
-}
+export { AssistantButton as AssistantPending } from './assistant';
