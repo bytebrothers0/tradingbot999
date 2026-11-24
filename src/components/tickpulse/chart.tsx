@@ -16,7 +16,7 @@ export function TradingChart({ candle = false, period = '1D', pair = 'XAU/USD' }
       rightPriceScale: { borderVisible: false, visible: true },
       timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false },
       crosshair: { vertLine: { color: color('--chart-text'), labelBackgroundColor: color('--chart-grid') }, horzLine: { color: color('--chart-text'), labelBackgroundColor: color('--chart-grid') } },
-      handleScroll: candle, handleScale: candle,
+      handleScroll: candle ? { mouseWheel: false, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: false } : false, handleScale: candle ? { mouseWheel: false, pinch: true, axisPressedMouseMove: true } : false,
     });
     const offset = period === '1W' ? 700 : period === '1M' ? 1300 : period === 'ALL' ? 2100 : 0;
     const base = pair === 'BTC/USD' ? 96420 : pair === 'EUR/USD' ? 1.085 : pair === 'GBP/USD' ? 1.265 : pair === 'ETH/USD' ? 3340 : pair === 'XAG/USD' ? 30.5 : pair === 'US30' ? 43840 : pair === 'USTEC' ? 20780 : 2642;
