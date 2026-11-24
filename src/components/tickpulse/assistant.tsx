@@ -17,7 +17,7 @@ export function AssistantButton() {
   const { bots, account, settings } = useTrading();
 
   useEffect(() => { try { const s = localStorage.getItem(KEY); if (s) setMsgs(JSON.parse(s) as Msg[]); } catch { /* ignore */ } }, []);
-  useEffect(() => { if (!busy) localStorage.setItem(KEY, JSON.stringify(msgs)); end.current?.scrollIntoView({ block: 'end' }); }, [msgs, busy]);
+  useEffect(() => { if (!busy) localStorage.setItem(KEY, JSON.stringify(msgs)); const box = end.current?.parentElement; if (box) box.scrollTop = box.scrollHeight; }, [msgs, busy]);
 
   async function send() {
     const text = input.trim();

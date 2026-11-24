@@ -124,7 +124,7 @@ h3 { font-size: 14px; font-weight: 550; }
 .chart-panel { border: 1px solid var(--border); border-radius: 8px; background: var(--card); margin-top: 18px; overflow: hidden; }
 .panel-toolbar { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; }
 .chart-subtitle { font-size: 11px; color: var(--primary); display: block; margin-top: 5px; }
-.equity-chart { height: 225px; width: calc(100% - 24px); margin: 0 12px 12px; }
+.equity-chart { overflow: hidden; height: 225px; width: calc(100% - 24px); margin: 0 12px 12px; }
 .segment-control { display: inline-flex; align-items: center; background: color-mix(in oklch,var(--background) 45%, transparent); padding: 3px; border: 1px solid var(--border); border-radius: 5px; gap: 3px; }
 .segment-control button { height: 26px; min-width: 39px; font-size: 10px; padding: 4px 10px; }
 .section-heading { margin: 26px 0 16px; display: flex; align-items: center; justify-content: space-between; }
@@ -219,7 +219,7 @@ legend { margin-bottom: 9px; }
 .performance-chart-wrap { flex: 1; min-width: 0; }
 .strategy-filter { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
 .strategy-filter > span { font-size: 11px; color: var(--muted-foreground); }
-.performance-chart { height: 225px; }
+.performance-chart { height: 225px; overflow: hidden; }
 .trades-section { border: 1px solid var(--border); border-radius: 8px; background: var(--card); overflow: hidden; }
 .trade-controls { display: flex; align-items: center; gap: 10px; }
 .search-input { display: flex; align-items: center; border: 1px solid var(--border); border-radius: 5px; padding-left: 11px; color: var(--muted-foreground); max-width: 205px; }
