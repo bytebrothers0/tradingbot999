@@ -15,6 +15,7 @@ import { Route as BotsRouteImport } from './routes/bots'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiBinanceSplatRouteImport } from './routes/api/binance/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,6 +47,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiBinanceSplatRoute = ApiBinanceSplatRouteImport.update({
+  id: '/api/binance/$',
+  path: '/api/binance/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/wallet': typeof WalletRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/binance/$': typeof ApiBinanceSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/wallet': typeof WalletRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/binance/$': typeof ApiBinanceSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,13 +79,27 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/wallet': typeof WalletRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/binance/$': typeof ApiBinanceSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/analytics' | '/bots' | '/settings' | '/wallet' | '/api/chat'
+    | '/'
+    | '/analytics'
+    | '/bots'
+    | '/settings'
+    | '/wallet'
+    | '/api/chat'
+    | '/api/binance/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analytics' | '/bots' | '/settings' | '/wallet' | '/api/chat'
+  to:
+    | '/'
+    | '/analytics'
+    | '/bots'
+    | '/settings'
+    | '/wallet'
+    | '/api/chat'
+    | '/api/binance/$'
   id:
     | '__root__'
     | '/'
@@ -86,6 +108,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/wallet'
     | '/api/chat'
+    | '/api/binance/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -95,6 +118,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   WalletRoute: typeof WalletRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiBinanceSplatRoute: typeof ApiBinanceSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -141,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/binance/$': {
+      id: '/api/binance/$'
+      path: '/api/binance/$'
+      fullPath: '/api/binance/$'
+      preLoaderRoute: typeof ApiBinanceSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -151,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   WalletRoute: WalletRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiBinanceSplatRoute: ApiBinanceSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

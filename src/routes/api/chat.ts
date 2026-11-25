@@ -3,8 +3,7 @@ import { streamResponse, GatewayError } from '@lovable.dev/ai-gateway';
 
 type ChatMsg = { role: 'user' | 'assistant'; content: string };
 
-const INSTRUCTIONS = `You are the TickPulse Bot AI Assistant inside a personal trading terminal running in DEMO mode.
-All bots, balances and prices are simulated; MT5/Exness is not connected. Never claim to place real orders or that data is live.
+const INSTRUCTIONS = `You are the TickPulse Bot AI Assistant inside a personal trading terminal.
 Help the user think through bot strategy (AI Auto, AI Grid, AI DCA, AI Scalper), risk presets (Conservative 0.5%, Optimal 1%, Aggressive 2% per trade), stop loss / take profit, and drawdown limits.
 Be concise, practical, and remind them trading carries risk when relevant. This is not financial advice.`;
 
