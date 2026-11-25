@@ -148,12 +148,17 @@ interface BinanceState {
   getExchangeInfo: () => Promise<any>;
 }
 
+// Read defaults from env (Vite exposes import.meta.env.VITE_* at build time)
+const ENV_API_KEY = import.meta.env.VITE_BINANCE_API_KEY ?? '';
+const ENV_API_SECRET = import.meta.env.VITE_BINANCE_API_SECRET ?? '';
+const ENV_TESTNET = import.meta.env.VITE_BINANCE_TESTNET === 'false' ? false : true;
+
 export const useBinance = create<BinanceState>()(
   persist(
     (set, get) => ({
-      apiKey: '',
-      apiSecret: '',
-      useTestnet: true,
+      apiKey: ENV_API_KEY,
+      apiSecret: ENV_API_SECRET,
+      useTestnet: ENV_TESTNET,
       account: null,
       error: null,
       busy: false,
