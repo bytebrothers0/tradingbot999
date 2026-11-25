@@ -33,4 +33,4 @@ use the editor.
 - Keep each of the five workspace views in its own TanStack file route with the persistent terminal shell at the root, so navigation preserves shared controls.
 - Use Zustand for simulated bot/account/risk state and Lightweight Charts for interactive browser charts; never label simulated data as live MT5 data.
 - Keep one assistant conversation in browser storage and all model calls in a streaming TanStack server route; no app authentication or private financial data is provided by this demo.
-- Local Electron, Python and MT5 execution are not part of the hosted runtime; require a separately verified local Windows bridge before enabling live funds.
+- MT5 access goes only through the local Python bridge in helper/ (127.0.0.1, pairing code, live orders blocked unless --allow-live); the hosted app never talks to brokers directly. Re-zip helper/ into public/tickpulse-bridge.zip after editing it.
