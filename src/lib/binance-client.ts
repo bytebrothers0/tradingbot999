@@ -76,58 +76,45 @@ export interface BinanceKline {
   ignore: string;
 }
 
-async function signParams(params: Record<string, string>, secret: string): Promise<string> {
-  const searchParams = new URLSearchParams(params);
-  const queryString = searchParams.toString();
-  const encoder = new TextEncoder();
-  const keyData = encoder.encode(secret);
-  const msgData = encoder.encode(queryString);
-  const key = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const sig = await crypto.subtle.sign('HMAC', key, msgData);
-  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('');
+const PROXY_URL = '/.netlify/functions/binance';
+
+interface ProxyRequest {
+  path: string;
+  method: 'GET' | 'POST' | 'DELETE';
+  params: Record<string, string>;
+  testnet?: boolean;
+  apiKey?: string;
+  apiSecret?: string;
 }
 
-const getBaseUrl = (testnet: boolean) => (testnet ? 'https://testnet.binance.vision' : 'https://api.binance.com');
-
-async function directFetch(
-  baseUrl: string,
+async function proxyFetch(
   path: string,
   apiKey: string | undefined,
   apiSecret: string | undefined,
+  useTestnet: boolean,
   method: 'GET' | 'POST' | 'DELETE' = 'GET',
   params: Record<string, string> = {}
 ): Promise<any> {
-  const url = new URL(`${baseUrl}/api/v3${path}`);
-  if (method === 'GET' || method === 'DELETE') {
-    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  }
+  const body: any = {
+    path: `/api/v3${path}`,
+    method,
+    params,
+    testnet: useTestnet,
+  };
+  if (apiKey) body.apiKey = apiKey;
+  if (apiSecret) body.apiSecret = apiSecret;
 
-  const headers: Record<string, string> = {};
-  if (apiKey) headers['X-MBX-APIKEY'] = apiKey;
-  if (method === 'POST') headers['Content-Type'] = 'application/x-www-form-urlencoded';
+  const res = await fetch(PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
 
-  const body = method === 'POST' ? new URLSearchParams(params).toString() : undefined;
-
-  const res = await fetch(url.toString(), { method, headers, body });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ msg: res.statusText }));
-    throw new Error(err.msg ?? `Binance error ${res.status}`);
+    throw new Error(err.error ?? err.msg ?? `Proxy error ${res.status}`);
   }
   return res.json();
-}
-
-async function signedDirectFetch(
-  baseUrl: string,
-  path: string,
-  apiKey: string,
-  apiSecret: string,
-  method: 'GET' | 'POST' | 'DELETE' = 'GET',
-  params: Record<string, string> = {}
-): Promise<any> {
-  const timestamp = Date.now().toString();
-  const allParams = { ...params, timestamp };
-  const signature = await signParams(allParams, apiSecret);
-  return directFetch(baseUrl, path, apiKey, apiSecret, method, { ...allParams, signature });
 }
 
 interface BinanceState {
@@ -178,19 +165,15 @@ export const useBinance = create<BinanceState>()(
         }
         set({ busy: true, error: null });
         try {
-          const baseUrl = getBaseUrl(useTestnet);
-          const account = await signedDirectFetch(baseUrl, '/account', apiKey, apiSecret);
+          const account = await proxyFetch('/account', apiKey, apiSecret, useTestnet);
           set({ account, busy: false, corsWarning: false });
         } catch (e) {
           const msg = (e as Error).message;
-          const isCORS = msg.includes('Failed to fetch') || msg.includes('CORS') || msg.includes('NetworkError');
           set({
-            error: isCORS
-              ? 'CORS blocked. Install a CORS browser extension (see Wallet page) or use a local proxy.'
-              : msg,
+            error: msg,
             busy: false,
             account: null,
-            corsWarning: isCORS,
+            corsWarning: false,
           });
           throw e;
         }
@@ -200,20 +183,16 @@ export const useBinance = create<BinanceState>()(
         const { apiKey, apiSecret, useTestnet } = get();
         if (!apiKey || !apiSecret) return;
         try {
-          const baseUrl = getBaseUrl(useTestnet);
-          const account = await signedDirectFetch(baseUrl, '/account', apiKey, apiSecret);
+          const account = await proxyFetch('/account', apiKey, apiSecret, useTestnet);
           set({ account, corsWarning: false });
         } catch (e) {
-          const msg = (e as Error).message;
-          const isCORS = msg.includes('Failed to fetch') || msg.includes('CORS') || msg.includes('NetworkError');
-          set({ error: msg, corsWarning: isCORS });
+          set({ error: (e as Error).message, corsWarning: false });
         }
       },
 
       placeOrder: async (symbol, side, quantity, price) => {
         const { apiKey, apiSecret, useTestnet } = get();
         if (!apiKey || !apiSecret) throw new Error('Not connected');
-        const baseUrl = getBaseUrl(useTestnet);
         const params: Record<string, string> = {
           symbol,
           side,
@@ -221,20 +200,18 @@ export const useBinance = create<BinanceState>()(
           quantity,
           ...(price ? { price, timeInForce: 'GTC' } : {}),
         };
-        return signedDirectFetch(baseUrl, '/order', apiKey, apiSecret, 'POST', params);
+        return proxyFetch('/order', apiKey, apiSecret, useTestnet, 'POST', params);
       },
 
       getTrades: async (symbol) => {
         const { apiKey, apiSecret, useTestnet } = get();
         if (!apiKey || !apiSecret) throw new Error('Not connected');
-        const baseUrl = getBaseUrl(useTestnet);
-        return signedDirectFetch(baseUrl, '/myTrades', apiKey, apiSecret, 'GET', { symbol });
+        return proxyFetch('/myTrades', apiKey, apiSecret, useTestnet, 'GET', { symbol });
       },
 
       getKlines: async (symbol, interval, limit = 500) => {
         const { useTestnet } = get();
-        const baseUrl = getBaseUrl(useTestnet);
-        const data = await directFetch(baseUrl, '/klines', undefined, undefined, 'GET', {
+        const data = await proxyFetch('/klines', undefined, undefined, useTestnet, 'GET', {
           symbol,
           interval,
           limit: limit.toString(),
@@ -257,8 +234,7 @@ export const useBinance = create<BinanceState>()(
 
       getExchangeInfo: async () => {
         const { useTestnet } = get();
-        const baseUrl = getBaseUrl(useTestnet);
-        return directFetch(baseUrl, '/exchangeInfo', undefined, undefined, 'GET', {});
+        return proxyFetch('/exchangeInfo', undefined, undefined, useTestnet, 'GET', {});
       },
     }),
     {
